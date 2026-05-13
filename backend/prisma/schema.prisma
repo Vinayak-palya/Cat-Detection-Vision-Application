@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Video {
+  id           String   @id @default(cuid())
+  filename     String
+  originalName String
+  fileSize     Int
+  durationSec  Float
+  filePath     String
+  status       String   @default("pending") // pending | processing | done | failed
+  uploadedAt   DateTime @default(now())
+
+  job ProcessingJob?
+
+  @@index([status])
+  @@index([uploadedAt])
+}
+
+model ProcessingJob {
+  id          String    @id @default(cuid())
+  videoId     String    @unique
+  status      String    @default("queued") // queued | processing | done | failed
+  progress    Int       @default(0) // 0-100
+  totalFrames Int       @default(0)
+  errorMsg    String?
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  video  Video             @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  frames FramePrediction[]
+
+  @@index([status])
+}
+
+model FramePrediction {
+  id           String  @id @default(cuid())
+  jobId        String
+  timestampSec Float
+  label        String // cat_present | cat_not_present
+  confidence   Float   @default(0)
+  framePath    String?
+
+  job ProcessingJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+}
