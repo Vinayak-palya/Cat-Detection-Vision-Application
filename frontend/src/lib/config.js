@@ -1,4 +1,4 @@
-const origin = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '');
+const origin = process.env.NEXT_PUBLIC_API_URL;
 
 export const API_ORIGIN = origin;
 export const API_BASE = `${origin}/api`;
